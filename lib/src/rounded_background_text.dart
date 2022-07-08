@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 const Color kDefaultRoundedTextBackgroundColor = Colors.blue;
 const double kDefaultInnerFactor = 8.0;
 const double kDefaultOuterFactor = 10.0;
+const double kDefaultStrokeWidth = 0.0;
 
 /// Gets the foreground color based on [backgroundColor]
 Color? foregroundColor(Color? backgroundColor) {
@@ -92,6 +93,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.textHeightBehavior,
     this.innerRadius = kDefaultInnerFactor,
     this.outerRadius = kDefaultOuterFactor,
+    this.strokeWidth = kDefaultStrokeWidth,
   })  : text = TextSpan(text: text, style: style),
         super(key: key);
 
@@ -112,6 +114,7 @@ class RoundedBackgroundText extends StatelessWidget {
     this.textHeightBehavior,
     this.innerRadius = kDefaultInnerFactor,
     this.outerRadius = kDefaultOuterFactor,
+    this.strokeWidth = kDefaultStrokeWidth,
   })  : assert(innerRadius >= 0.0 && innerRadius <= 20.0),
         assert(outerRadius >= 0.0 && outerRadius <= 20.0),
         super(key: key);
@@ -180,6 +183,13 @@ class RoundedBackgroundText extends StatelessWidget {
   /// {@end-template}
   final double outerRadius;
 
+  /// {@template rounded_background_text.outerRadius}
+  /// Additional stroke for the background
+  ///
+  /// Defaults to [this.strokeWidth]
+  /// {@end-template}
+  final double strokeWidth;
+
   @override
   Widget build(BuildContext context) {
     final defaultTextStyle = DefaultTextStyle.of(context);
@@ -208,6 +218,7 @@ class RoundedBackgroundText extends StatelessWidget {
       textScaleFactor: textScaleFactor,
       innerFactor: innerRadius,
       outerFactor: outerRadius,
+      strokeWidth: strokeWidth,
     );
   }
 }
@@ -228,6 +239,7 @@ class _RoundedBackgroundText extends StatefulWidget {
     this.ellipsis,
     this.innerFactor = kDefaultInnerFactor,
     this.outerFactor = kDefaultOuterFactor,
+    this.strokeWidth = kDefaultStrokeWidth,
   }) : super(key: key);
 
   final InlineSpan text;
@@ -245,6 +257,7 @@ class _RoundedBackgroundText extends StatefulWidget {
 
   final double innerFactor;
   final double outerFactor;
+  final double strokeWidth;
 
   @override
   __RoundedBackgroundTextState createState() => __RoundedBackgroundTextState();
@@ -318,6 +331,7 @@ class __RoundedBackgroundTextState extends State<_RoundedBackgroundText> {
             text: painter,
             innerFactor: widget.innerFactor,
             outerFactor: widget.outerFactor,
+            strokeWidth: widget.strokeWidth,
           ),
         ),
       );
@@ -329,7 +343,7 @@ class _HighlightPainter extends CustomPainter {
   final List<List<LineMetricsHelper>> lineInfos;
   final Color backgroundColor;
   final TextPainter text;
-
+  final double strokeWidth;
   final double innerFactor;
   final double outerFactor;
 
@@ -339,6 +353,7 @@ class _HighlightPainter extends CustomPainter {
     required this.text,
     this.innerFactor = kDefaultInnerFactor,
     this.outerFactor = kDefaultOuterFactor,
+    this.strokeWidth = kDefaultStrokeWidth,
   });
 
   @override
@@ -355,6 +370,19 @@ class _HighlightPainter extends CustomPainter {
     if (lineInfos.length == 1) {
       final info = lineInfos.first;
       if (!info.isEmpty) {
+        canvas.drawRRect(
+          RRect.fromLTRBR(
+            info.x,
+            info.y,
+            info.fullWidth,
+            info.fullHeight,
+            Radius.circular(outerFactor),
+          ),
+          Paint()
+            ..color = backgroundColor
+            ..strokeWidth = strokeWidth
+            ..style = PaintingStyle.stroke,
+        );
         canvas.drawRRect(
           RRect.fromLTRBR(
             info.x,
